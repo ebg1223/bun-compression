@@ -9,13 +9,15 @@ export class CompressionStream {
   readable: ReadableStream
   writable: WritableStream
 
-  constructor(format: 'gzip' | 'deflate') {
+  constructor(format: 'gzip' | 'deflate' | 'brotli') {
     const handle =
       format === 'deflate'
         ? zlib.createDeflate()
         : format === 'gzip'
           ? zlib.createGzip()
-          : zlib.createDeflateRaw()
+          : format === 'brotli'
+            ? zlib.createBrotliCompress()
+            : zlib.createDeflateRaw()
 
     this.readable = new ReadableStream({
       start(controller) {

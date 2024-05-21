@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from 'hono'
 import { gzipSync, deflateSync, type ZlibCompressionOptions } from 'bun'
 import { CompressionStream } from './stream'
 import { isReadableStream } from './utils'
+import { BrotliOptions } from 'node:zlib'
 
 export type CompressionOptions = {
   /**
@@ -9,13 +10,13 @@ export type CompressionOptions = {
    *
    * Algorithm to use for compression.
    */
-  type: 'gzip' | 'deflate' // | 'brotli'
+  type: 'gzip' | 'deflate' | 'brotli'
   /**
    * @param {Object}
    *
    * Options for the compression algorithm.
    */
-  options?: ZlibCompressionOptions // | BrotliOptions
+  options?: ZlibCompressionOptions | BrotliOptions
   /**
    * @default `utf-8`
    *
@@ -55,8 +56,8 @@ export const compress = (
     const compressedBody = isReadableStream(stream)
       ? stream.pipeThrough(new CompressionStream(type))
       : type === 'gzip'
-        ? gzipSync(toBuffer(c.res.body, encoding), options)
-        : deflateSync(toBuffer(c.res.body, encoding), options)
+      ? gzipSync(toBuffer(c.res.body, encoding), options)
+      : deflateSync(toBuffer(c.res.body, encoding), options)
 
     c.res = new Response(compressedBody, {
       headers: c.res.headers,
